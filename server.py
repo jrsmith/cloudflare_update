@@ -4,6 +4,7 @@ import json
 import socket
 import re
 
+
 app = Flask(__name__)
 app.config.from_object('settings')
 
@@ -30,7 +31,7 @@ def update():
         'z': app.config.get('CLOUDFLARE_DOMAIN'),
         'id': app.config.get('CLOUDFLARE_RECORD_ID'),
         'type': 'A',
-        'name': 'foolio.penano.com',
+        'name': app.config.get('CLOUDFLARE_SUBDOMAIN'),
         'content': ip,
         'ttl': 120
     }
