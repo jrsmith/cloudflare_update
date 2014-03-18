@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>penananananooooooo</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/styles.min.css">
+</head>
+
+<body>
+
+<div id="container-main" class="container center-block">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>foolio.penano.com update form</h1>
+        </div>
+    </div>
+    <div class="row">
+        <form id="form-ip-update" method="post" class="col-md-12">
+            <div class="input-group">
+                <span id="prefix-ip" class="input-group-addon">192.168.50.</span>
+                <input type="text" class="form-control" id="ip" value="{{ last_ip_octet }}">
+                <div class="input-group-btn">
+                    <input type="submit" class="btn btn-primary" tabindex="-1" value="Update">
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="row top-buffer">
+        <div id="container-status" class="col-md-12"></div>
+    </div>
+</div>
+
+<script src="/static/js/jquery-2.1.0.min.js"></script>
+<script>
+
+$(function() {
+
+    var $statusContainer = $('#container-status');
+    var checkInterval;
+
+    var checkIP = function() {
+
+        var newIP = $('#prefix-ip').text() + $('#ip').val();
+
+        $.getJSON('/ip', {}, function(data) {
+            console.log('IP Check', data);
+
+            if (data.ip === newIP) {
+                console.log('IPs match');
+                clearInterval(checkInterval);
+                $statusContainer.html('<div class="alert alert-success"> \
+                    <strong>DNS updated!</strong> \
+                </div>');  
+            }
+
+        });
+
+    };
+
+    $('#form-ip-update').on('submit', function(e) {
+
+        e.preventDefault();
+
+        var ip = $('#prefix-ip').text() + $('#ip').val();
+        var $req = $.post('/', {ip: ip});
+
+        $statusContainer.html('Loading...');
+
+        $.when($req)
+            .then(function(data) {
+                if (data.result === 'success') {
+
+                    $statusContainer.html('<div class="alert alert-success"> \
+                        <strong>Success!</strong> IP Updated \
+                    </div>');    
+
+                    setTimeout(function() {
+                        $statusContainer.html('<div class="alert alert-danger"> \
+                            <strong>Checking DNS for update...</strong> \
+                        </div>');  
+                        checkInterval = setInterval(checkIP, 10000);
+                    }, 1000);
+
+                } else {
+                    $statusContainer.html('<div class="alert alert-danger"> \
+                        <strong>Error!</strong> ' + data.msg + ' \
+                    </div>');
+                }
+            })
+            .fail(function(xhr) {
+                var data = JSON.parse(xhr.responseText);
+                $statusContainer.html('<div class="alert alert-danger"> \
+                    <strong>Error!</strong> ' + data.msg + ' \
+                </div>');
+            });
+
+    });
+
+});
+
+</script>
+
+</body>
+
+</html>
